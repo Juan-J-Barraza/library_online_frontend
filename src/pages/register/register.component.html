@@ -1,0 +1,32 @@
+<div class="register-container">
+
+  <div class="register-card">
+
+    <h1>📚 Biblioteca Online</h1>
+    <h2>Crear Cuenta</h2>
+
+    <input type="text" [(ngModel)]="name" placeholder="Nombre Ej: Jhon">
+
+    <input type="text" [(ngModel)]="lastName" placeholder="Apellido Ej: Doe">
+
+    <input type="email" [(ngModel)]="email" placeholder="Correo">
+
+    <input type="password" [(ngModel)]="password" placeholder="Contraseña">
+
+    <select [(ngModel)]="role">
+      <option value="" disabled selected>Selecciona tu rol</option>
+      <option value="PROFESOR">Profesor</option>
+      <option value="ESTUDIANTE">Estudiante</option>
+    </select>
+
+    <button class="btn-register" (click)="register()">
+      Registrarse
+    </button>
+
+    <button class="btn-back" routerLink="/login">
+      Volver al Login
+    </button>
+
+  </div>
+
+</div>

@@ -1,0 +1,38 @@
+.historial-container{
+
+padding:40px;
+
+}
+
+.historial-table{
+
+width:100%;
+
+border-collapse:collapse;
+
+margin-top:20px;
+
+}
+
+.historial-table th{
+
+background:#374151;
+color:white;
+
+padding:10px;
+
+}
+
+.historial-table td{
+
+padding:10px;
+
+border-bottom:1px solid #ddd;
+
+}
+
+.historial-table tr:hover{
+
+background:#f3f4f6;
+
+}

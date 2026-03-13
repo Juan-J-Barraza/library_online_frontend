@@ -1,0 +1,59 @@
+<div class="login-container">
+
+  <!-- Capa oscura para mejorar visibilidad -->
+  <div class="overlay"></div>
+
+  <div class="login-card">
+
+    <h2>📚 Biblioteca Online</h2>
+    <p class="subtitle">Inicia sesión para acceder a los libros</p>
+
+    <form class="login-form">
+
+      <div class="input-group">
+        <span>📧</span>
+        <input 
+          type="email"
+          [(ngModel)]="email"
+          name="email"
+          placeholder="Correo"
+          autocomplete="email"
+          required
+        >
+      </div>
+
+      <div class="input-group">
+        <span>🔒</span>
+        <input 
+          type="password"
+          [(ngModel)]="password"
+          name="password"
+          placeholder="Contraseña"
+          autocomplete="current-password"
+          required
+        >
+      </div>
+
+      <button class="login-btn" (click)="login()">
+        Ingresar
+      </button>
+
+    </form>
+
+    <p class="error" *ngIf="errorMensaje">
+      {{errorMensaje}}
+    </p>
+
+    <div class="register-section">
+      <p>No tienes cuenta?</p>
+
+      <button 
+        class="register-btn"
+        routerLink="/register">
+        Registrarse
+      </button>
+    </div>
+
+  </div>
+
+</div>

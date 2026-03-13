@@ -1,0 +1,45 @@
+.reserva-container{
+
+padding:40px;
+
+}
+
+.reserva-table{
+
+width:100%;
+border-collapse:collapse;
+
+margin-top:20px;
+
+}
+
+.reserva-table th{
+
+background:#1f2937;
+color:white;
+
+padding:10px;
+
+}
+
+.reserva-table td{
+
+padding:10px;
+border-bottom:1px solid #ddd;
+
+}
+
+.reserva-table button{
+
+padding:6px 12px;
+
+background:#3b82f6;
+color:white;
+
+border:none;
+
+border-radius:5px;
+
+cursor:pointer;
+
+}

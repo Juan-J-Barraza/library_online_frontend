@@ -1,0 +1,27 @@
+<table>
+
+  <tr>
+    <th>Título</th>
+    <th>Disponibilidad</th>
+    <th>Acción</th>
+  </tr>
+
+  <tr *ngFor="let libro of libros">
+
+    <td>{{ libro.title }}</td>
+
+    <td>
+      {{ libro.available_quantity > 0 ? 'Disponible' : 'No disponible' }}
+    </td>
+
+    <td>
+      <button
+        *ngIf="libro.available_quantity > 0"
+        (click)="prestarLibro(libro.id)">
+        Prestar
+      </button>
+    </td>
+
+  </tr>
+
+</table>
