@@ -1,27 +1,155 @@
-<table>
+<div class="loans-container animate-fade-in">
+  
+  <div class="loans-header" style="display: flex; justify-content: space-between; align-items: center;">
+    <div>
+      <h1>📚 Gestión de Préstamos</h1>
+      <p class="subtitle">Administra los préstamos de libros ( activos y devueltos).</p>
+    </div>
+    
+    <button class="primary-btn" (click)="abrirCreateModal()" *ngIf="authService.getCurrentUser()?.role === 'ADMIN'">
+      + Crear Préstamo
+    </button>
+  </div>
 
-  <tr>
-    <th>Título</th>
-    <th>Disponibilidad</th>
-    <th>Acción</th>
-  </tr>
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Cargando préstamos...</p>
+  </div>
 
-  <tr *ngFor="let libro of libros">
+  <div class="empty-state" *ngIf="!isLoading && loans.length === 0">
+    <div class="empty-icon">📅</div>
+    <h3>No hay préstamos</h3>
+    <p>No se encontraron registros de préstamos en el sistema.</p>
+  </div>
 
-    <td>{{ libro.title }}</td>
+  <div class="loans-grid" *ngIf="!isLoading && loans.length > 0">
+    <div class="loan-card" *ngFor="let loan of loans">
+      
+      <div class="loan-header">
+        <span class="status-badge" [ngClass]="loan.status.toLowerCase()">
+          {{ loan.status === 'SOLICITADO' ? 'PENDIENTE CONFIRMAR' : loan.status }}
+        </span>
+      </div>
 
-    <td>
-      {{ libro.available_quantity > 0 ? 'Disponible' : 'No disponible' }}
-    </td>
+      <div class="loan-body">
+        <div class="book-info">
+          <img [src]="'data:image/jpeg;base64,' + loan.book.image" *ngIf="loan.book.image" class="book-cover">
+          <div class="book-cover placeholder" *ngIf="!loan.book.image">📚</div>
+          <div class="book-details">
+            <h4>{{ loan.book.title }}</h4>
+            <span class="qty-badge">{{ loan.quantity }} unid.</span>
+          </div>
+        </div>
 
-    <td>
-      <button
-        *ngIf="libro.available_quantity > 0"
-        (click)="prestarLibro(libro.id)">
-        Prestar
+        <div class="info-group user" *ngIf="authService.getCurrentUser()?.role === 'ADMIN'">
+          <label>Usuario</label>
+          <p>{{ loan.user.name }} {{ loan.user.last_name }}</p>
+          <small>{{ loan.user.email }}</small>
+        </div>
+
+        <div class="info-group dates">
+          <div class="date-item" *ngIf="loan.reservation_date">
+            <label>Reservado / Solicitado</label>
+            <p>{{ loan.reservation_date | date:'dd MMM yyyy, HH:mm' }}</p>
+          </div>
+          <div class="date-item" *ngIf="loan.status === 'PRESTADO'">
+            <label>Fecha de Devolución</label>
+            <p>{{ loan.expected_return_date | date:'dd MMM yyyy' }}</p>
+          </div>
+          <div class="date-item" *ngIf="loan.status === 'DEVUELTO'">
+            <label>Devuelto Realmente</label>
+            <p>{{ loan.actual_return_date | date:'dd MMM yyyy' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="loan-footer" *ngIf="authService.getCurrentUser()?.role === 'ADMIN'">
+        <button class="action-btn return" *ngIf="loan.status === 'PRESTADO' || loan.status === 'ACTIVE'" (click)="abrirReturnModal(loan.id)">
+          Marcar como Devuelto
+        </button>
+        <span class="completed-msg" *ngIf="loan.status === 'DEVUELTO' || loan.status === 'RETURNED'">✅ Completado</span>
+      </div>
+      
+      <div class="loan-footer" *ngIf="authService.getCurrentUser()?.role !== 'ADMIN'">
+         <span class="completed-msg" *ngIf="loan.status === 'PRESTADO' || loan.status === 'ACTIVE'">📘 Disfruta tu lectura</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="pagination" *ngIf="totalPages >= 1 && !isLoading">
+    <button (click)="cambiarPagina(page - 1)" [disabled]="page === 1" class="page-btn">Anterior</button>
+    <div class="page-numbers">
+      <button *ngFor="let p of getPages()" 
+              (click)="cambiarPagina(p)" 
+              [class.active]="p === page" 
+              class="page-number-btn">
+        {{ p }}
       </button>
-    </td>
+    </div>
+    <button (click)="cambiarPagina(page + 1)" [disabled]="page === totalPages" class="page-btn">Siguiente</button>
+  </div>
 
-  </tr>
+</div>
 
-</table>
+<!-- Return Loan Modal -->
+<div class="modal-overlay" *ngIf="isReturnModalOpen">
+  <div class="modal-content return-modal">
+    <div class="modal-header">
+      <div class="modal-icon return-icon">🔙</div>
+      <h3>Registrar Devolución</h3>
+      <p class="modal-subtitle">¿Confirmas que el libro ha sido devuelto por el usuario?</p>
+    </div>
+    
+    <div class="modal-form">
+      <div class="modal-actions">
+        <button class="cancel-modal-btn" (click)="cerrarReturnModal()">No, Cancelar</button>
+        <button class="submit-btn resolve" (click)="devolverPrestamo()">Sí, Registrar Devolución</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create Direct Loan Modal -->
+<div class="modal-overlay" *ngIf="isCreateModalOpen">
+  <div class="modal-content create-modal" style="max-width: 500px;">
+    <div class="modal-header">
+      <div class="modal-icon return-icon" style="background: #f3e8ff; color: #a855f7;">✨</div>
+      <h3>Nuevo Préstamo Directo</h3>
+      <p class="modal-subtitle">Asigna un libro directamente a un usuario sin reserva previa.</p>
+    </div>
+    
+    <div class="modal-form">
+      <div class="form-group">
+        <label>Usuario Destinatario</label>
+        <select [(ngModel)]="newLoanUserId" class="styled-select" required>
+          <option [ngValue]="null" disabled>Selecciona un usuario...</option>
+          <option *ngFor="let u of activeUsers" [value]="u.id">{{ u.name }} {{ u.last_name }} ({{ u.email }})</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Libro a Prestar</label>
+        <select [(ngModel)]="newLoanBookId" class="styled-select" required>
+           <option [ngValue]="null" disabled>Selecciona un libro...</option>
+           <option *ngFor="let b of availableBooks" [value]="b.id">{{ b.title }} (Disponibles: {{ b.available_quantity }})</option>
+        </select>
+      </div>
+
+      <div style="display: flex; gap: 1rem;">
+        <div class="form-group" style="flex: 1;">
+          <label>Cantidad</label>
+          <input type="number" [(ngModel)]="newLoanQuantity" min="1" required>
+        </div>
+        <div class="form-group" style="flex: 2;">
+          <label>Fecha de Devolución</label>
+          <input type="date" [(ngModel)]="newLoanExpectedDate" [min]="minDate" required>
+        </div>
+      </div>
+      
+      <div class="modal-actions">
+        <button class="cancel-modal-btn" (click)="cerrarCreateModal()">Cancelar</button>
+        <button class="submit-btn" style="background: #a855f7;" (click)="crearPrestamoDirecto()" [disabled]="!newLoanUserId || !newLoanBookId || !newLoanExpectedDate || newLoanQuantity < 1">Crear Préstamo</button>
+      </div>
+    </div>
+  </div>
+</div>

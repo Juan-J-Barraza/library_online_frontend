@@ -1,7 +1,127 @@
-<h2>Libros Reservados</h2>
+<div class="reservations-container animate-fade-in">
+  
+  <div class="reservations-header">
+    <div>
+      <h1>📚 {{ authService.getCurrentUser()?.role === 'ADMIN' ? 'Todas las Reservas' : 'Mis Reservas' }}</h1>
+      <p class="subtitle">Administra y revisa el estado de los préstamos temporales.</p>
+    </div>
+  </div>
 
-<ul>
-  <li *ngFor="let libro of libros">
-    {{ libro.title }} - {{ libro.authors }}
-  </li>
-</ul>
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Cargando reservas...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!isLoading && reservations.length === 0">
+    <div class="empty-icon">📅</div>
+    <h3>No hay reservas activas</h3>
+    <p>Aún no se han registrado reservas en el sistema.</p>
+  </div>
+
+  <!-- Data Grid -->
+  <div class="reservations-grid" *ngIf="!isLoading && reservations.length > 0">
+    <div class="reservation-card" *ngFor="let res of reservations">
+      
+      <div class="res-header">
+        <span class="status-badge" [ngClass]="res.status.toLowerCase()">
+          {{ res.status }}
+        </span>
+      </div>
+
+      <div class="res-body">
+        <div class="book-info">
+          <img [src]="'data:image/jpeg;base64,' + res.book.image" alt="Portada de {{ res.book.title }}" *ngIf="res.book.image" class="book-cover">
+          <div class="book-cover placeholder" *ngIf="!res.book.image">📚</div>
+          <div class="book-details">
+            <h4>{{ res.book.title }}</h4>
+            <span class="qty-badge">{{ res.quantity }} unid.</span>
+          </div>
+        </div>
+
+        <div class="info-group" *ngIf="authService.getCurrentUser()?.role === 'ADMIN'">
+          <label>Usuario Solicitante</label>
+          <p>{{ res.user.name }} {{ res.user.last_name }}</p>
+          <small>{{ res.user.email }}</small>
+        </div>
+
+        <div class="info-group dates">
+          <div class="date-item">
+            <label>Fecha Reserva</label>
+            <p>{{ res.reservation_date | date:'dd MMM yyyy, HH:mm' }}</p>
+          </div>
+          <div class="date-item" *ngIf="res.expected_return_date">
+            <label>Devolución Calculada</label>
+            <p>{{ res.expected_return_date | date:'dd MMM yyyy' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="res-footer" *ngIf="res.status !== 'CANCELADA'">
+        <button class="action-btn confirm" *ngIf="authService.getCurrentUser()?.role === 'ADMIN' && res.status !== 'ACTIVE'" (click)="abrirConfirmModal(res.id)">
+          Confirmar Préstamo
+        </button>
+        <button class="cancel-btn" (click)="abrirCancelar(res.id)">Cancelar Reserva</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination" *ngIf="totalPages >= 1 && !isLoading">
+    <button (click)="cambiarPagina(page - 1)" [disabled]="page === 1" class="page-btn">Anterior</button>
+    <div class="page-numbers">
+      <button *ngFor="let p of getPages()" 
+              (click)="cambiarPagina(p)" 
+              [class.active]="p === page" 
+              class="page-number-btn">
+        {{ p }}
+      </button>
+    </div>
+    <button (click)="cambiarPagina(page + 1)" [disabled]="page === totalPages" class="page-btn">Siguiente</button>
+  </div>
+
+</div>
+
+
+<!-- Cancel Modal -->
+<div class="modal-overlay" *ngIf="isCancelModalOpen">
+  <div class="modal-content cancel-modal">
+    <div class="modal-header">
+      <div class="modal-icon cancel-icon">⚠️</div>
+      <h3>¿Cancelar Reserva?</h3>
+      <p class="modal-subtitle">¿Estás seguro de que deseas cancelar esta reserva? Esta acción no se puede deshacer.</p>
+    </div>
+    
+    <div class="modal-form">
+      <div class="modal-actions">
+        <button class="cancel-modal-btn" (click)="cerrarCancelarModal()">No, Volver</button>
+        <button class="submit-btn danger" (click)="cancelarReserva()">Sí, Cancelar Reserva</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Loan Modal -->
+<div class="modal-overlay" *ngIf="isConfirmModalOpen">
+  <div class="modal-content confirm-modal">
+    <div class="modal-header">
+      <div class="modal-icon confirm-icon">🤝</div>
+      <h3>Confirmar Préstamo</h3>
+      <p class="modal-subtitle">Establece la fecha límite en la que el usuario deberá devolver este libro.</p>
+    </div>
+    
+    <div class="modal-form">
+      <div class="form-group">
+        <label>Fecha Límite de Devolución</label>
+        <input type="date" [(ngModel)]="confirmExpectedDate" [min]="minDate" required>
+      </div>
+      
+      <div class="modal-actions">
+        <button class="cancel-modal-btn" (click)="cerrarConfirmModal()">Cancelar</button>
+        <button class="submit-btn success" (click)="confirmarPrestamo()" [disabled]="!confirmExpectedDate">Confirmar</button>
+      </div>
+    </div>
+  </div>
+</div>

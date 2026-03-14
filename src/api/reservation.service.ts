@@ -3,7 +3,8 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { ReservationResponse } from '../models/ReservationResponse';
-import { BookResponse } from '../models/bookResponse';
+import { CreateReservationRequest } from '../models/createReservationRequest';
+import { ReservationPaginated } from '../models/reservationPaginated';
 
 @Injectable({
   providedIn: 'root'
@@ -13,19 +14,19 @@ export class ReservationService {
 
   constructor(private http: HttpClient) { }
 
-  reserve(bookId: number): Observable<ReservationResponse[]> {
-    return this.http.post<ReservationResponse[]>(`${this.apiUrl}/reservations/${bookId}`, {});
+  getReservations(page: number = 1, pageSize: number = 8): Observable<ReservationPaginated> {
+    return this.http.get<ReservationPaginated>(`${this.apiUrl}/reservations?page=${page}&page_size=${pageSize}`);
   }
 
-  getReservations(): Observable<BookResponse[]> {
-    return this.http.get<BookResponse[]>(`${this.apiUrl}/reservations`);
+  getReservationById(id: number): Observable<ReservationResponse> {
+    return this.http.get<ReservationResponse>(`${this.apiUrl}/reservations/${id}`);
   }
 
-  loan(bookId: number): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/loads/${bookId}`, {});
+  reserve(request: CreateReservationRequest): Observable<ReservationResponse> {
+    return this.http.post<ReservationResponse>(`${this.apiUrl}/reservations`, request);
   }
 
-  getHistory(): Observable<BookResponse[]> {
-    return this.http.get<BookResponse[]>(`${this.apiUrl}/historial`);
+  cancel(id: number): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/reservations/${id}/cancel`, {});
   }
 }

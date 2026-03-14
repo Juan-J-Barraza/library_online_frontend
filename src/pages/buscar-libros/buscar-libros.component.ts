@@ -62,20 +62,72 @@ export class BuscarLibrosComponent implements OnInit {
     this.buscar();
   }
 
-  reservar(id: number) {
+  // Reservation Modal State
+  isReservaModalOpen = false;
+  selectedBookForReserva: BookResponse | null = null;
+  reservaQuantity = 1;
+  reservaExpectedReturnDate = '';
+
+  // Date limits for the input date picker
+  minDate = '';
+  maxDate = '';
+
+  abrirReserva(book: BookResponse) {
     if (!this.authService.isAuthenticated()) {
       this.toastService.showInfo('Debes iniciar sesión para reservar un libro.');
       this.router.navigate(['/']);
       return;
     }
 
-    this.reservationService.reserve(id).subscribe({
+    this.selectedBookForReserva = book;
+    this.reservaQuantity = 1;
+
+    // Set date limits (Today to Today + 5 days)
+    const today = new Date();
+    this.minDate = today.toISOString().split('T')[0];
+
+    const max = new Date(today);
+    max.setDate(today.getDate() + 5);
+    this.maxDate = max.toISOString().split('T')[0];
+
+    // Default to maximum allowed date for convenience
+    this.reservaExpectedReturnDate = this.maxDate;
+
+    this.isReservaModalOpen = true;
+  }
+
+  cerrarReservaModal() {
+    this.isReservaModalOpen = false;
+    this.selectedBookForReserva = null;
+  }
+
+  confirmarReserva() {
+    if (!this.selectedBookForReserva) return;
+
+    if (this.reservaQuantity < 1 || this.reservaQuantity > this.selectedBookForReserva.available_quantity) {
+      this.toastService.showError('Cantidad no válida.');
+      return;
+    }
+
+    if (!this.reservaExpectedReturnDate) {
+      this.toastService.showError('Debes seleccionar una fecha de devolución.');
+      return;
+    }
+
+    const isoDateString = new Date(this.reservaExpectedReturnDate + 'T23:59:59').toISOString();
+
+    this.reservationService.reserve({
+      book_id: this.selectedBookForReserva.id,
+      quantity: this.reservaQuantity,
+      expected_return_date: isoDateString
+    }).subscribe({
       next: () => {
         this.toastService.showSuccess('¡Libro reservado con éxito! 📚');
+        this.cerrarReservaModal();
         this.buscar(); // Actualizar disponibilidad
       },
       error: (err) => {
-        this.toastService.showError('No se pudo realizar la reserva.');
+        this.toastService.showError(err.error?.error || 'No se pudo realizar la reserva.');
       }
     });
   }

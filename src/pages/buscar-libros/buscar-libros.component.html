@@ -54,7 +54,7 @@
             <button 
               class="reserve-btn" 
               [disabled]="book.available_quantity === 0 || !authService.isAuthenticated()"
-              (click)="reservar(book.id)"
+              (click)="abrirReserva(book)"
             >
               <ng-container *ngIf="!authService.isAuthenticated()">🔒 Inicia sesión para reservar</ng-container>
               <ng-container *ngIf="authService.isAuthenticated()">
@@ -75,6 +75,52 @@
           {{ p }}
         </button>
         <button [disabled]="filters.page === totalPages" (click)="cambiarPagina(filters.page! + 1)">»</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Reservation Modal -->
+<div class="modal-overlay" *ngIf="isReservaModalOpen">
+  <div class="modal-content reserve-modal">
+    <div class="modal-header">
+      <div class="modal-icon reserve-icon">🗓️</div>
+      <h3>Detalles de tu Reserva</h3>
+      <p class="modal-subtitle">Estás a punto de reservar <b>{{ selectedBookForReserva?.title }}</b></p>
+    </div>
+    
+    <div class="modal-form">
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>Fecha de Devolución</label>
+          <input 
+            type="date" 
+            [(ngModel)]="reservaExpectedReturnDate" 
+            [min]="minDate" 
+            [max]="maxDate"
+            required
+            class="reserva-date-input"
+          >
+          <small class="hint">Máx. 5 días a partir de hoy</small>
+        </div>
+        
+        <div class="form-group">
+          <label>Cantidad</label>
+          <input 
+            type="number" 
+            [(ngModel)]="reservaQuantity" 
+            min="1" 
+            [max]="selectedBookForReserva?.available_quantity || 1"
+            required
+            class="reserva-qty-input"
+          >
+        </div>
+      </div>
+      
+      <div class="modal-actions">
+        <button class="cancel-modal-btn" (click)="cerrarReservaModal()">Cancelar</button>
+        <button class="submit-btn" (click)="confirmarReserva()" [disabled]="!reservaExpectedReturnDate || reservaQuantity < 1">Confirmar Reserva</button>
       </div>
     </div>
   </div>

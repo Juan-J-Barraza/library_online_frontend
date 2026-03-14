@@ -25,6 +25,8 @@
 
         <!-- Regular user links -->
         <a routerLink="/reservas" routerLinkActive="active" (click)="menuOpen = false">Reservas</a>
+        <a routerLink="/prestamos" routerLinkActive="active" (click)="menuOpen = false">Prestamos</a>
+
 
         <div class="user-menu" (click)="logout(); menuOpen = false">
           <span>{{ authService.getCurrentUser()?.name }}</span>
