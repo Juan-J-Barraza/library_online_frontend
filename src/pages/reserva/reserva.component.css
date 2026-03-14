@@ -260,6 +260,11 @@
   color: #dc2626;
 }
 
+.modal-icon.confirm-icon {
+  background: #e0e7ff;
+  color: #4f46e5;
+}
+
 .modal-header h3 {
   font-size: 1.25rem;
   font-weight: 700;
@@ -347,6 +352,31 @@
 
 .submit-btn.danger:hover {
   background: #b91c1c;
+}
+
+.submit-btn.success {
+  background: var(--primary);
+}
+
+.submit-btn.success:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.action-btn.confirm {
+  background: var(--primary);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  border: none;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-right: 0.5rem;
+}
+
+.action-btn.confirm:hover {
+  background: var(--primary-hover);
 }
 
 /* Pagination */

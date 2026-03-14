@@ -9,6 +9,7 @@ import { AdminGuard } from 'src/guards/admin.guard';
 import { UserManagementComponent } from 'src/pages/usuarios/user-management.component';
 import { DashboardComponent } from 'src/pages/dashboard/dashboard.component';
 import { BookManagementComponent } from 'src/pages/book-management/book-management.component';
+import { PrestamoLibroComponent } from 'src/pages/prestamo-libro/prestamo-libro.component';
 
 const routes: Routes = [
 
@@ -23,6 +24,8 @@ const routes: Routes = [
   { path: 'admin/libros', component: BookManagementComponent, canActivate: [AdminGuard] },
 
   { path: 'usuarios', component: UserManagementComponent, canActivate: [AdminGuard] },
+  
+  { path: 'prestamos', component: PrestamoLibroComponent, canActivate: [AuthGuard] },
 
   { path: '**', redirectTo: '' }
 

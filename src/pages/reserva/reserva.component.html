@@ -59,6 +59,9 @@
       </div>
 
       <div class="res-footer" *ngIf="res.status !== 'CANCELADA'">
+        <button class="action-btn confirm" *ngIf="authService.getCurrentUser()?.role === 'ADMIN' && res.status !== 'ACTIVE'" (click)="abrirConfirmModal(res.id)">
+          Confirmar Préstamo
+        </button>
         <button class="cancel-btn" (click)="abrirCancelar(res.id)">Cancelar Reserva</button>
       </div>
 
@@ -95,6 +98,29 @@
       <div class="modal-actions">
         <button class="cancel-modal-btn" (click)="cerrarCancelarModal()">No, Volver</button>
         <button class="submit-btn danger" (click)="cancelarReserva()">Sí, Cancelar Reserva</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Loan Modal -->
+<div class="modal-overlay" *ngIf="isConfirmModalOpen">
+  <div class="modal-content confirm-modal">
+    <div class="modal-header">
+      <div class="modal-icon confirm-icon">🤝</div>
+      <h3>Confirmar Préstamo</h3>
+      <p class="modal-subtitle">Establece la fecha límite en la que el usuario deberá devolver este libro.</p>
+    </div>
+    
+    <div class="modal-form">
+      <div class="form-group">
+        <label>Fecha Límite de Devolución</label>
+        <input type="date" [(ngModel)]="confirmExpectedDate" [min]="minDate" required>
+      </div>
+      
+      <div class="modal-actions">
+        <button class="cancel-modal-btn" (click)="cerrarConfirmModal()">Cancelar</button>
+        <button class="submit-btn success" (click)="confirmarPrestamo()" [disabled]="!confirmExpectedDate">Confirmar</button>
       </div>
     </div>
   </div>
