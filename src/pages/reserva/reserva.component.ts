@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ReservationService } from '../../api/reservation.service';
@@ -6,6 +6,8 @@ import { LoanService } from 'src/api/loan.service';
 import { ReservationResponse } from 'src/models/ReservationResponse';
 import { AuthService } from 'src/api/auth.service';
 import { ToastService } from 'src/app/components/toast/toast.service';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-reserva',
@@ -14,7 +16,7 @@ import { ToastService } from 'src/app/components/toast/toast.service';
   templateUrl: './reserva.component.html',
   styleUrls: ['./reserva.component.css']
 })
-export class ReservaComponent implements OnInit {
+export class ReservaComponent implements OnInit, OnDestroy {
 
   reservations: ReservationResponse[] = [];
 
@@ -23,6 +25,11 @@ export class ReservaComponent implements OnInit {
   totalPages = 0;
   totalElements = 0;
   isLoading = false;
+
+  // Search
+  searchTerm = '';
+  searchSubject = new Subject<string>();
+  private searchSubscription!: Subscription;
 
   // Cancel Modal
   isCancelModalOpen = false;
@@ -42,14 +49,34 @@ export class ReservaComponent implements OnInit {
 
   ngOnInit() {
     this.cargarReservas();
-    
+
+    // Setup Search Debounce
+    this.searchSubscription = this.searchSubject.pipe(
+      debounceTime(400),
+      distinctUntilChanged()
+    ).subscribe(term => {
+      this.searchTerm = term;
+      this.page = 1; // Reset to first page
+      this.cargarReservas();
+    });
+
     const today = new Date();
     this.minDate = today.toISOString().split('T')[0];
   }
 
+  ngOnDestroy() {
+    if (this.searchSubscription) {
+      this.searchSubscription.unsubscribe();
+    }
+  }
+
+  onSearchChange(event: any) {
+    this.searchSubject.next(event.target.value);
+  }
+
   cargarReservas() {
     this.isLoading = true;
-    this.reservationService.getReservations(this.page, this.pageSize).subscribe({
+    this.reservationService.getReservations(this.page, this.pageSize, this.searchTerm).subscribe({
       next: (res) => {
         this.reservations = res.data;
         this.totalPages = res.total_pages;

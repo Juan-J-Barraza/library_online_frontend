@@ -14,8 +14,12 @@ export class ReservationService {
 
   constructor(private http: HttpClient) { }
 
-  getReservations(page: number = 1, pageSize: number = 8): Observable<ReservationPaginated> {
-    return this.http.get<ReservationPaginated>(`${this.apiUrl}/reservations?page=${page}&page_size=${pageSize}`);
+  getReservations(page: number = 1, pageSize: number = 8, bookName: string = ''): Observable<ReservationPaginated> {
+    let url = `${this.apiUrl}/reservations?page=${page}&page_size=${pageSize}`;
+    if (bookName) {
+      url += `&book_name=${encodeURIComponent(bookName)}`;
+    }
+    return this.http.get<ReservationPaginated>(url);
   }
 
   getReservationById(id: number): Observable<ReservationResponse> {

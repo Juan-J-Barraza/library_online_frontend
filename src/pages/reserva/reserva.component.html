@@ -1,9 +1,19 @@
 <div class="reservations-container animate-fade-in">
   
-  <div class="reservations-header">
+  <div class="reservations-header" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem;">
     <div>
       <h1>📚 {{ authService.getCurrentUser()?.role === 'ADMIN' ? 'Todas las Reservas' : 'Mis Reservas' }}</h1>
       <p class="subtitle">Administra y revisa el estado de los préstamos temporales.</p>
+    </div>
+
+    <div class="search-bar" style="flex: 1; max-width: 400px; position: relative;">
+      <span style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); opacity: 0.5;">🔍</span>
+      <input 
+        type="text" 
+        placeholder="Buscar por nombre del libro..." 
+        (input)="onSearchChange($event)"
+        style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border: 1px solid var(--border); border-radius: 99px; background: var(--surface); color: var(--text-main); font-size: 0.875rem;"
+      >
     </div>
   </div>
 
