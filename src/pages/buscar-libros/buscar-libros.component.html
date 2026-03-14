@@ -1,21 +1,81 @@
-<div class="pagination">
+<div class="marketplace-container animate-fade-in">
+  <header class="marketplace-header">
+    <div class="header-info">
+      <h1>Catálogo de Libros</h1>
+      <p>Explora nuestra colección y reserva tus favoritos</p>
+    </div>
+    
+    <div class="search-box glass-card">
+      <div class="search-input">
+        <span class="search-icon">🔍</span>
+        <input 
+          type="text" 
+          [(ngModel)]="filters.title" 
+          (keyup.enter)="buscar()"
+          placeholder="Buscar por título..."
+        >
+      </div>
+      <button class="primary-btn" (click)="buscar()">Buscar</button>
+    </div>
+  </header>
 
-  <button 
-    (click)="anteriorPagina()"
-    [disabled]="page == 1"
-  >
-    ⬅ Anterior
-  </button>
+  <div class="marketplace-content">
+    <div class="gallery-wrapper">
+      <div *ngIf="isLoading" class="loader-container">
+        <div class="spinner"></div>
+      </div>
 
-  <span>
-    Página {{page}} de {{totalPages}}
-  </span>
+      <div *ngIf="!isLoading && libros.length === 0" class="empty-state">
+        <span class="empty-icon">📖</span>
+        <p>No se encontraron libros que coincidan con tu búsqueda.</p>
+      </div>
 
-  <button 
-    (click)="siguientePagina()"
-    [disabled]="page == totalPages"
-  >
-    Siguiente ➡
-  </button>
+      <div class="book-grid" *ngIf="!isLoading">
+        <div class="book-card glass-card animate-fade-in" *ngFor="let book of libros">
+          <div class="book-badge" [class.available]="book.available_quantity > 0">
+            {{ book.available_quantity > 0 ? 'Disponible' : 'Agotado' }}
+          </div>
+          <div class="book-image-container">
+            <img [src]="book.image ? 'data:image/jpeg;base64,' + book.image : 'assets/placeholder-book.png'" [alt]="book.title">
+          </div>
+          <div class="book-info">
+            <h4>{{ book.title }}</h4>
+            <div class="book-meta">
+              <span class="editorial">{{ book.editorial.name }}</span>
+              <span class="authors">
+                <span *ngFor="let author of book.authors; let last = last">
+                  {{ author.name }} {{ author.last_name }}{{ !last ? ', ' : '' }}
+                </span>
+              </span>
+            </div>
+            <div class="book-stats">
+              <span class="qty">📦 {{ book.available_quantity }} / {{ book.total_quantity }}</span>
+            </div>
+            <button 
+              class="reserve-btn" 
+              [disabled]="book.available_quantity === 0 || !authService.isAuthenticated()"
+              (click)="reservar(book.id)"
+            >
+              <ng-container *ngIf="!authService.isAuthenticated()">🔒 Inicia sesión para reservar</ng-container>
+              <ng-container *ngIf="authService.isAuthenticated()">
+                {{ book.available_quantity > 0 ? 'Reservar Ahora' : 'No Disponible' }}
+              </ng-container>
+            </button>
+          </div>
+        </div>
+      </div>
 
+      <div class="pagination-container" *ngIf="totalPages >= 1">
+        <button [disabled]="filters.page === 1" (click)="cambiarPagina(filters.page! - 1)">«</button>
+        <button 
+          *ngFor="let p of getPages()" 
+          [class.active]="p === filters.page"
+          (click)="cambiarPagina(p)"
+        >
+          {{ p }}
+        </button>
+        <button [disabled]="filters.page === totalPages" (click)="cambiarPagina(filters.page! + 1)">»</button>
+      </div>
+    </div>
+  </div>
 </div>

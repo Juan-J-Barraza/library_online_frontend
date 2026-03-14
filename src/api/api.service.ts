@@ -5,7 +5,7 @@ import { BookResponse } from 'src/models/bookResponse';
 import { AuthResponse } from 'src/models/authResponse';
 import { ReservationResponse } from 'src/models/ReservationResponse';
 import { BookPaginated } from 'src/models/bookPaginated';
-import { FiltersBook } from 'src/pages/buscar-libros/buscar-libros.component';
+import { FiltersBook } from '../models/filtersBook';
 
 
 @Injectable({
@@ -53,17 +53,8 @@ export class ApiService {
     return this.http.post<ReservationResponse[]>(`${this.apiUrl}/reservations/${id}`, {});
   }
 
-  prestarLibro(id: number): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/loads/${id}`, {});
-  }
-
   obtenerReservas(): Observable<BookResponse[]> {
     return this.http.get<BookResponse[]>(`${this.apiUrl}/reservations`);
-  }
-
-
-  obtenerHistorial(): Observable<BookResponse[]> {
-    return this.http.get<BookResponse[]>(`${this.apiUrl}/historial`);
   }
 
 

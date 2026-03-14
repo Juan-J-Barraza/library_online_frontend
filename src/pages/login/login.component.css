@@ -1,87 +1,137 @@
-/* Fondo con imagen de biblioteca */
-.login-container{
-    min-height:100vh;
-    width:100%;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-
-    background-image:url('https://images.unsplash.com/photo-1521587760476-6c12a4b040da');
-    background-size:cover;
-    background-position:center;
+.auth-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.1), transparent),
+              radial-gradient(circle at bottom left, rgba(99, 102, 241, 0.05), transparent);
 }
 
-
-/* Tarjeta del login */
-.login-card{
-    background: rgba(255,255,255,0.92);
-    padding:40px;
-    border-radius:15px;
-    width:350px;
-    box-shadow:0 10px 30px rgba(0,0,0,0.4);
-    text-align:center;
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 2.5rem;
 }
 
-/* Título */
-.login-card h2{
-    margin-bottom:10px;
+.auth-header {
+  text-align: center;
+  margin-bottom: 2rem;
 }
 
-.subtitle{
-    color:#555;
-    font-size:14px;
-    margin-bottom:25px;
+.auth-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 1rem;
 }
 
-/* Inputs */
-.login-card input{
-    width:100%;
-    padding:10px;
-    margin-bottom:15px;
-    border-radius:8px;
-    border:1px solid #ccc;
-    font-size:14px;
+.auth-header h2 {
+  font-size: 1.75rem;
+  margin-bottom: 0.5rem;
 }
 
-/* Botón ingresar */
-.login-btn{
-    width:100%;
-    padding:10px;
-    background:#2a5298;
-    color:white;
-    border:none;
-    border-radius:8px;
-    cursor:pointer;
-    font-size:15px;
-    transition:0.3s;
+.auth-header p {
+  color: var(--text-muted);
+  font-size: 0.875rem;
 }
 
-.login-btn:hover{
-    background:#1e3c72;
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-/* Mensaje de error */
-.error{
-    color:red;
-    margin-top:10px;
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
-/* Sección registro */
-.register-section{
-    margin-top:20px;
+.error-msg {
+  color: #ef4444;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  text-align: center;
 }
 
-/* Botón registrarse */
-.register-btn{
-    background:#4CAF50;
-    color:white;
-    border:none;
-    padding:8px 15px;
-    border-radius:6px;
-    cursor:pointer;
-    transition:0.3s;
+.primary-btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 0.875rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+  font-size: 1rem;
+  margin-top: 0.5rem;
 }
 
-.register-btn:hover{
-    background:#43a047;
+.primary-btn:hover:not(:disabled) {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.primary-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.auth-footer p {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: var(--border);
+}
+
+.divider::before, .divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--border);
+}
+
+.divider span {
+  padding: 0 10px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.secondary-btn {
+  background: transparent;
+  color: var(--text-main);
+  border: 1px solid var(--border);
+  padding: 0.75rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+}
+
+.secondary-btn:hover {
+  background: var(--surface);
+  border-color: var(--secondary);
+}
+
+.loader {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
