@@ -1,54 +1,52 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { ApiService } from '../../api/api.service';
 import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '../../api/auth.service';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [
-    FormsModule,
-    CommonModule,
-    RouterModule   
-  ],
-  templateUrl: './register.component.html'
+  imports: [FormsModule, CommonModule, RouterModule],
+  templateUrl: './register.component.html',
+  styleUrls: ['./register.component.css']
 })
 export class RegisterComponent {
-
   name = '';
   lastName = '';
-  role = '';
+  role: 'PROFESOR' | 'ESTUDIANTE' | 'ADMIN' | '' = '';
   email = '';
   password = '';
+  errorMensaje = '';
+  isLoading = false;
 
-  constructor(private api: ApiService, private router: Router) {}
+  constructor(private authService: AuthService, private router: Router) {}
 
-  register(){
-
-    if(!this.role){
-      alert("Debe seleccionar un rol");
+  register() {
+    if (!this.name || !this.lastName || !this.role || !this.email || !this.password) {
+      this.errorMensaje = 'Por favor, completa todos los campos.';
       return;
     }
 
-    this.api.register(
-      this.name,
-      this.lastName,
-      this.role,
-      this.email,
-      this.password
-    ).subscribe(res => {
+    this.isLoading = true;
+    this.errorMensaje = '';
 
-      alert("Usuario registrado correctamente");
-
-      this.router.navigate(['/']);
-
-    }, error => {
-
-      alert("Error al registrar usuario");
-
+    this.authService.register({
+      name: this.name,
+      last_name: this.lastName,
+      role: this.role as any,
+      email: this.email,
+      password: this.password
+    }).subscribe({
+      next: (res) => {
+        localStorage.setItem('token', res.token);
+        localStorage.setItem('user', JSON.stringify(res.user));
+        this.router.navigate(['/libros']);
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.errorMensaje = 'Error al registrarse. Inténtalo de nuevo.';
+      }
     });
-
   }
-
 }

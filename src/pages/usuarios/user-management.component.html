@@ -1,0 +1,163 @@
+<div class="management-container animate-fade-in">
+  <header class="management-header">
+    <div>
+      <h1>Gestión de Usuarios</h1>
+      <p>Administra las cuentas y roles del sistema</p>
+    </div>
+    <button class="add-user-btn" (click)="abrirCrear()">
+      <span class="btn-icon">+</span> Nuevo Usuario
+    </button>
+  </header>
+
+  <div class="management-content glass-card">
+    <div class="table-actions">
+      <div class="search-filters">
+        <div class="search-input-wrapper">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            [ngModel]="filters.name"
+            (ngModelChange)="onSearchInput($event)"
+            placeholder="Buscar por nombre..."
+          >
+        </div>
+        <select [(ngModel)]="filters.role" (change)="cargarUsuarios()">
+          <option value="">Todos los roles</option>
+          <option value="ESTUDIANTE">Estudiante</option>
+          <option value="PROFESOR">Profesor</option>
+        </select>
+      </div>
+      <span class="results-count" *ngIf="!isLoading">{{ totalElements }} usuarios</span>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="modern-table">
+        <thead>
+          <tr>
+            <th>Nombre Completo</th>
+            <th>Email</th>
+            <th>Rol</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of usuarios" class="table-row-animate">
+            <td>
+              <div class="user-info">
+                <span class="full-name">{{ user.name }} {{ user.last_name }}</span>
+              </div>
+            </td>
+            <td>{{ user.email }}</td>
+            <td>
+              <span class="role-badge" [class]="user.role.toLowerCase()">{{ user.role }}</span>
+            </td>
+            <td>
+              <div class="actions">
+                <button class="edit-btn" (click)="abrirEditar(user)" title="Editar">✏️</button>
+                <button class="delete-btn" (click)="eliminar(user.id)" title="Eliminar">🗑️</button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="usuarios.length === 0 && !isLoading">
+            <td colspan="5" class="empty-row">No hay usuarios registrados.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination" *ngIf="totalPages >= 1">
+      <button [disabled]="filters.page === 1" (click)="cambiarPagina(filters.page! - 1)">«</button>
+      <button
+        *ngFor="let p of getPages()"
+        [class.active]="p === filters.page"
+        (click)="cambiarPagina(p)"
+      >
+        {{ p }}
+      </button>
+      <button [disabled]="filters.page === totalPages" (click)="cambiarPagina(filters.page! + 1)">»</button>
+    </div>
+  </div>
+
+  <!-- Edit Modal -->
+  <div class="modal-overlay" *ngIf="isEditModalOpen" (click)="cerrarModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-icon edit-icon">✏️</div>
+        <h3>Editar Usuario</h3>
+        <p class="modal-subtitle">Modifica los datos de este usuario</p>
+      </div>
+      <form *ngIf="selectedUser" (ngSubmit)="guardarCambios()" class="modal-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nombre</label>
+            <input type="text" [(ngModel)]="selectedUser.name" name="name" required>
+          </div>
+          <div class="form-group">
+            <label>Apellido</label>
+            <input type="text" [(ngModel)]="selectedUser.last_name" name="lastName" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" [(ngModel)]="selectedUser.email" name="email" required>
+        </div>
+        <div class="form-group">
+          <label>Rol</label>
+          <select [(ngModel)]="selectedUser.role" name="role" required>
+            <option value="ESTUDIANTE">Estudiante</option>
+            <option value="PROFESOR">Profesor</option>
+            <option value="ADMIN">Admin</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="cancel-btn" (click)="cerrarModal()">Cancelar</button>
+          <button type="submit" class="submit-btn">Guardar Cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Create User Modal -->
+  <div class="modal-overlay" *ngIf="isCreateModalOpen" (click)="cerrarCrearModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-icon create-icon">👤</div>
+        <h3>Registrar Nuevo Usuario</h3>
+        <p class="modal-subtitle">Completa los datos para crear una nueva cuenta</p>
+      </div>
+      <form (ngSubmit)="crearUsuario()" class="modal-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nombre</label>
+            <input type="text" [(ngModel)]="newUser.name" name="newName" placeholder="Juan" required>
+          </div>
+          <div class="form-group">
+            <label>Apellido</label>
+            <input type="text" [(ngModel)]="newUser.last_name" name="newLastName" placeholder="Pérez" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Correo Electrónico</label>
+          <input type="email" [(ngModel)]="newUser.email" name="newEmail" placeholder="ejemplo@correo.com" required>
+        </div>
+        <div class="form-group">
+          <label>Contraseña</label>
+          <input type="password" [(ngModel)]="newUser.password" name="newPassword" placeholder="••••••••" required>
+        </div>
+        <div class="form-group">
+          <label>Rol</label>
+          <select [(ngModel)]="newUser.role" name="newRole" required>
+            <option value="ESTUDIANTE">Estudiante</option>
+            <option value="PROFESOR">Profesor</option>
+            <option value="ADMIN">Administrador</option>
+          </select>
+        </div>
+        <p class="error-msg" *ngIf="createErrorMsg">{{ createErrorMsg }}</p>
+        <div class="modal-actions">
+          <button type="button" class="cancel-btn" (click)="cerrarCrearModal()">Cancelar</button>
+          <button type="submit" class="submit-btn">Crear Usuario</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

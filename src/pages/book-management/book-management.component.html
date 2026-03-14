@@ -1,0 +1,211 @@
+<div class="management-container animate-fade-in">
+  <header class="management-header">
+    <div>
+      <h1>Gestión de Libros</h1>
+      <p>Administra el catálogo de la biblioteca</p>
+    </div>
+    <button class="add-btn" (click)="abrirCrear()">
+      <span class="btn-icon">+</span> Nuevo Libro
+    </button>
+  </header>
+
+  <div class="management-content glass-card">
+    <div class="table-actions">
+      <div class="search-input-wrapper">
+        <span class="search-icon">🔍</span>
+        <input
+          type="text"
+          [ngModel]="filters.title"
+          (ngModelChange)="onSearchInput($event)"
+          placeholder="Buscar por título..."
+        >
+      </div>
+      <span class="results-count" *ngIf="!isLoading">{{ totalElements }} libros</span>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="modern-table">
+        <thead>
+          <tr>
+            <th>Título</th>
+            <th>Editorial</th>
+            <th>Autores</th>
+            <th>Disponible</th>
+            <th>Total</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let book of libros">
+            <td>
+              <div class="book-title-cell">
+                <img
+                  class="book-thumb"
+                  [src]="book.image ? 'data:image/jpeg;base64,' + book.image : 'assets/placeholder-book.png'"
+                  [alt]="book.title"
+                >
+                <span>{{ book.title }}</span>
+              </div>
+            </td>
+            <td>{{ book.editorial.name }}</td>
+            <td>
+              <span *ngFor="let a of book.authors; let last = last">
+                {{ a.name }} {{ a.last_name }}{{ !last ? ', ' : '' }}
+              </span>
+            </td>
+            <td>
+              <span class="qty-badge" [class.low]="book.available_quantity === 0">
+                {{ book.available_quantity }}
+              </span>
+            </td>
+            <td>{{ book.total_quantity }}</td>
+            <td>
+              <div class="actions">
+                <button class="edit-btn" (click)="abrirEditar(book)" title="Editar">✏️</button>
+                <button class="delete-btn" (click)="eliminar(book.id)" title="Eliminar">🗑️</button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="libros.length === 0 && !isLoading">
+            <td colspan="6" class="empty-row">No hay libros registrados.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination" *ngIf="totalPages >= 1">
+      <button [disabled]="filters.page === 1" (click)="cambiarPagina(filters.page! - 1)">«</button>
+      <button
+        *ngFor="let p of getPages()"
+        [class.active]="p === filters.page"
+        (click)="cambiarPagina(p)"
+      >
+        {{ p }}
+      </button>
+      <button [disabled]="filters.page === totalPages" (click)="cambiarPagina(filters.page! + 1)">»</button>
+    </div>
+  </div>
+
+  <!-- Create Book Modal -->
+  <div class="modal-overlay" *ngIf="isCreateModalOpen" (click)="cerrarCrearModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-icon create-icon">📖</div>
+        <h3>Nuevo Libro</h3>
+        <p class="modal-subtitle">Completa los datos del nuevo libro</p>
+      </div>
+      <form (ngSubmit)="crearLibro()" class="modal-form">
+        <div class="form-group">
+          <label>Título</label>
+          <input type="text" [(ngModel)]="newBook.title" name="title" placeholder="Título del libro" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Cantidad Disponible</label>
+            <input type="number" [(ngModel)]="newBook.available_quantity" name="availableQty" min="0" required>
+          </div>
+          <div class="form-group">
+            <label>Cantidad Total</label>
+            <input type="number" [(ngModel)]="newBook.total_quantity" name="totalQty" min="1" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Editorial</label>
+          <select [(ngModel)]="newBook.editorial_id" name="editorialId" required>
+            <option [value]="0" disabled>Selecciona una editorial</option>
+            <option *ngFor="let ed of availableEditorials" [value]="ed.id">{{ ed.name }}</option>
+          </select>
+        </div>
+        <div class="form-group checkbox-group">
+          <label>Autores</label>
+          <div class="checkbox-container">
+            <div class="checkbox-search-wrapper">
+              <input type="text" [(ngModel)]="authorSearchNew" name="searchNew" placeholder="Buscar autor..." class="checkbox-search">
+            </div>
+            <div class="checkbox-list">
+              <label class="checkbox-item" *ngFor="let author of getFilteredAuthors('new')">
+                <input type="checkbox"
+                       [checked]="isAuthorSelected(author.id, 'new')"
+                       (change)="toggleAuthor(author.id, 'new')">
+                <span class="checkbox-label">{{ author.name }} {{ author.last_name }}</span>
+              </label>
+              <div class="empty-list" *ngIf="getFilteredAuthors('new').length === 0">
+                No se encontraron autores.
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Imagen</label>
+          <input type="file" accept="image/*" (change)="onImageSelected($event, 'new')" class="file-input">
+        </div>
+        <p class="error-msg" *ngIf="errorMsg">{{ errorMsg }}</p>
+        <div class="modal-actions">
+          <button type="button" class="cancel-btn" (click)="cerrarCrearModal()">Cancelar</button>
+          <button type="submit" class="submit-btn">Crear Libro</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Book Modal -->
+  <div class="modal-overlay" *ngIf="isEditModalOpen" (click)="cerrarEditarModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-icon edit-icon">✏️</div>
+        <h3>Editar Libro</h3>
+        <p class="modal-subtitle">Modifica los datos del libro</p>
+      </div>
+      <form (ngSubmit)="guardarCambios()" class="modal-form">
+        <div class="form-group">
+          <label>Título</label>
+          <input type="text" [(ngModel)]="editBook.title" name="editTitle" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Cantidad Disponible</label>
+            <input type="number" [(ngModel)]="editBook.available_quantity" name="editAvailableQty" min="0" required>
+          </div>
+          <div class="form-group">
+            <label>Cantidad Total</label>
+            <input type="number" [(ngModel)]="editBook.total_quantity" name="editTotalQty" min="1" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Editorial</label>
+          <select [(ngModel)]="editBook.editorial_id" name="editEditorialId" required>
+            <option *ngFor="let ed of availableEditorials" [value]="ed.id">{{ ed.name }}</option>
+          </select>
+        </div>
+        <div class="form-group checkbox-group">
+          <label>Autores</label>
+          <div class="checkbox-container">
+            <div class="checkbox-search-wrapper">
+              <input type="text" [(ngModel)]="authorSearchEdit" name="searchEdit" placeholder="Buscar autor..." class="checkbox-search">
+            </div>
+            <div class="checkbox-list">
+              <label class="checkbox-item" *ngFor="let author of getFilteredAuthors('edit')">
+                <input type="checkbox"
+                       [checked]="isAuthorSelected(author.id, 'edit')"
+                       (change)="toggleAuthor(author.id, 'edit')">
+                <span class="checkbox-label">{{ author.name }} {{ author.last_name }}</span>
+              </label>
+              <div class="empty-list" *ngIf="getFilteredAuthors('edit').length === 0">
+                No se encontraron autores.
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Cambiar Imagen</label>
+          <input type="file" accept="image/*" (change)="onImageSelected($event, 'edit')" class="file-input">
+        </div>
+        <p class="error-msg" *ngIf="errorMsg">{{ errorMsg }}</p>
+        <div class="modal-actions">
+          <button type="button" class="cancel-btn" (click)="cerrarEditarModal()">Cancelar</button>
+          <button type="submit" class="submit-btn">Guardar Cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

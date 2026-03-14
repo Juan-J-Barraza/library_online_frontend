@@ -1,19 +1,45 @@
-<nav *ngIf="estaLogueado()" class="navbar">
+<nav class="glass-navbar animate-fade-in">
+  <div class="container nav-content">
+    <a [routerLink]="authService.getCurrentUser()?.role === 'ADMIN' ? '/dashboard' : '/libros'" class="logo">
+      <span class="icon">📚</span>
+      <span class="text">Library <span class="accent">Market</span></span>
+    </a>
 
-  <div class="menu">
+    <button class="menu-toggle" (click)="menuOpen = !menuOpen">
+      <span [class.open]="menuOpen">☰</span>
+    </button>
 
-    <a routerLink="/libros">📚 Libros</a>
+    <div class="nav-links" [class.open]="menuOpen">
+      <!-- Non-admin users see marketplace -->
+      <ng-container *ngIf="authService.getCurrentUser()?.role !== 'ADMIN'">
+        <a routerLink="/libros" routerLinkActive="active" (click)="menuOpen = false">Marketplace</a>
+      </ng-container>
 
-    <a routerLink="/reservas">📖 Reservas</a>
+      <ng-container *ngIf="authService.isAuthenticated()">
+        <!-- Admin links -->
+        <ng-container *ngIf="authService.getCurrentUser()?.role === 'ADMIN'">
+          <a routerLink="/dashboard" routerLinkActive="active" (click)="menuOpen = false">Dashboard</a>
+          <a routerLink="/admin/libros" routerLinkActive="active" (click)="menuOpen = false">Libros</a>
+          <a routerLink="/usuarios" routerLinkActive="active" (click)="menuOpen = false">Usuarios</a>
+        </ng-container>
 
-    <a routerLink="/historial">🕘 Historial</a>
+        <!-- Regular user links -->
+        <a routerLink="/reservas" routerLinkActive="active" (click)="menuOpen = false">Reservas</a>
 
+        <div class="user-menu" (click)="logout(); menuOpen = false">
+          <span>{{ authService.getCurrentUser()?.name }}</span>
+          <button class="logout-btn">Salir</button>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="!authService.isAuthenticated()">
+        <a routerLink="/" class="login-link" (click)="menuOpen = false">Login</a>
+      </ng-container>
+    </div>
   </div>
-
-  <button (click)="logout()" class="logout">
-    Cerrar sesión
-  </button>
-
 </nav>
 
-<router-outlet></router-outlet>
+<main class="main-content">
+  <router-outlet></router-outlet>
+</main>
+<app-toast></app-toast>

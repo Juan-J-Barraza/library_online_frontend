@@ -3,25 +3,26 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { BuscarLibrosComponent } from 'src/pages/buscar-libros/buscar-libros.component';
 import { ReservaComponent } from 'src/pages/reserva/reserva.component';
-import { HistorialComponent } from 'src/pages/historial/historial.component';
 import { LoginComponent } from 'src/pages/login/login.component';
-import { RegisterComponent } from 'src/pages/register/register.component';
 import { AuthGuard } from 'src/guards/auth.guard';
-import { PrestamoLibroComponent } from 'src/pages/prestamo-libro/prestamo-libro.component';
+import { AdminGuard } from 'src/guards/admin.guard';
+import { UserManagementComponent } from 'src/pages/usuarios/user-management.component';
+import { DashboardComponent } from 'src/pages/dashboard/dashboard.component';
+import { BookManagementComponent } from 'src/pages/book-management/book-management.component';
 
 const routes: Routes = [
 
   { path: '', component: LoginComponent },
 
-  { path: 'prestamo-libro',component: PrestamoLibroComponent},
+  { path: 'libros', component: BuscarLibrosComponent },
 
-  { path: 'register', component: RegisterComponent },
+  { path: 'reservas', component: ReservaComponent, canActivate: [AuthGuard] },
 
-  { path: 'libros', component: BuscarLibrosComponent, canActivate:[AuthGuard] },
+  { path: 'dashboard', component: DashboardComponent, canActivate: [AdminGuard] },
 
-  { path: 'reservas', component: ReservaComponent, canActivate:[AuthGuard] },
+  { path: 'admin/libros', component: BookManagementComponent, canActivate: [AdminGuard] },
 
-  { path: 'historial', component: HistorialComponent, canActivate:[AuthGuard] },
+  { path: 'usuarios', component: UserManagementComponent, canActivate: [AdminGuard] },
 
   { path: '**', redirectTo: '' }
 

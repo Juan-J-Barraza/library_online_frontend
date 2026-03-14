@@ -1,67 +1,53 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import { ApiService } from '../../api/api.service';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '../../api/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [FormsModule, CommonModule, RouterModule],
-  templateUrl: './login.component.html'
+  templateUrl: './login.component.html',
+  styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
-
   email = '';
   password = '';
   errorMensaje = '';
+  isLoading = false;
 
-  constructor(private api: ApiService, private router: Router) {
+  constructor(private authService: AuthService, private router: Router) {
+    if (this.authService.isAuthenticated()) {
+      const dest = this.authService.getCurrentUser()?.role === 'ADMIN' ? '/dashboard' : '/libros';
+      this.router.navigate([dest]);
+    }
+  }
 
-    if(localStorage.getItem('token')){
-      this.router.navigate(['/libros']);
+  login() {
+    if (!this.email || !this.password) {
+      this.errorMensaje = 'Por favor, completa todos los campos.';
+      return;
     }
 
-  }
-
-  login(){
-
+    this.isLoading = true;
     this.errorMensaje = '';
 
-    this.api.login(this.email, this.password).subscribe(res => {
-
-      localStorage.setItem("token", res.token);
-
-      this.router.navigate(['/libros']);
-
-    }, error => {
-
-      if(error.status === 404){
-        this.errorMensaje = "Esa cuenta no existe. Regístrate.";
+    this.authService.login({ email: this.email, password: this.password }).subscribe({
+      next: (res) => {
+        localStorage.setItem('token', res.token);
+        localStorage.setItem('user', JSON.stringify(res.user));
+        const dest = res.user.role === 'ADMIN' ? '/dashboard' : '/libros';
+        this.router.navigate([dest]);
+      },
+      error: (err) => {
+        this.isLoading = false;
+        if (err.status === 401) {
+          this.errorMensaje = 'Credenciales incorrectas.';
+        } else {
+          this.errorMensaje = 'Error al iniciar sesión. Inténtalo de nuevo.';
+        }
       }
-
-      else if(error.status === 401){
-        this.errorMensaje = "El correo o la contraseña son incorrectos.";
-      }
-
-      else{
-        this.errorMensaje = "Error al iniciar sesión.";
-      }
-
     });
-
   }
-
-  // 🔹 entrar como invitado
-  invitado(){
-     alert("Entrando como invitado");
-
-    localStorage.removeItem('token'); // aseguramos que no haya sesión
-    localStorage.setItem('guest','true');
-
-    this.router.navigate(['/libros']);
-
-  }
-
 }

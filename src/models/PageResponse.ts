@@ -1,9 +1,6 @@
-export interface PageResponse<T>{
-
-page:number;
-page_size:number;
-total_items:number;
-total_pages:number;
-data:T[];
-
+export interface PageResponse {
+  total_elements: number;
+  total_pages: number;
+  page: number;
+  size: number;
 }

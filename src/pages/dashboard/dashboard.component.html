@@ -1,0 +1,56 @@
+<div class="dashboard-container animate-fade-in">
+  <header class="dashboard-header">
+    <h1>Panel de Administración</h1>
+    <p>Resumen general del sistema de biblioteca</p>
+  </header>
+
+  <div class="stats-grid" *ngIf="stats && !isLoading">
+    <div class="stat-card glass-card">
+      <div class="stat-icon total">📚</div>
+      <div class="stat-info">
+        <span class="stat-value">{{ stats.total_books }}</span>
+        <span class="stat-label">Total de Libros</span>
+      </div>
+    </div>
+
+    <div class="stat-card glass-card">
+      <div class="stat-icon available">✅</div>
+      <div class="stat-info">
+        <span class="stat-value">{{ stats.available_books }}</span>
+        <span class="stat-label">Disponibles</span>
+      </div>
+    </div>
+
+    <div class="stat-card glass-card">
+      <div class="stat-icon borrowed">📖</div>
+      <div class="stat-info">
+        <span class="stat-value">{{ stats.borrowed_books }}</span>
+        <span class="stat-label">Prestados</span>
+      </div>
+    </div>
+
+    <div class="stat-card glass-card">
+      <div class="stat-icon reserved">🔖</div>
+      <div class="stat-info">
+        <span class="stat-value">{{ stats.reserved_books }}</span>
+        <span class="stat-label">Reservados</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="quick-actions">
+    <h2>Acciones Rápidas</h2>
+    <div class="actions-grid">
+      <a routerLink="/admin/libros" class="action-card glass-card">
+        <span class="action-icon">📖</span>
+        <span class="action-title">Gestión de Libros</span>
+        <span class="action-desc">Crear, editar y eliminar libros</span>
+      </a>
+      <a routerLink="/usuarios" class="action-card glass-card">
+        <span class="action-icon">👥</span>
+        <span class="action-title">Gestión de Usuarios</span>
+        <span class="action-desc">Administrar cuentas y roles</span>
+      </a>
+    </div>
+  </div>
+</div>

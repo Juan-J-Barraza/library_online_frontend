@@ -3,5 +3,5 @@ export interface UserResponse {
   name: string;
   last_name: string;
   email: string;
-  role: string;
+  role: 'PROFESOR' | 'ESTUDIANTE' | 'ADMIN';
 }
